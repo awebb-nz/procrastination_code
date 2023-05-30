@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+plt.rcParams['font.size'] = 14
+plt.rcParams['lines.linewidth'] = 2
+
 #%%
 # find optimal policy using dynamic programming
 
@@ -75,16 +78,15 @@ def get_transition_prob(efficacy):
             
 #%%
     
-
-efficacys = np.linspace(0, 1, 20)
-start_works = np.full( (len(efficacys), 4), np.nan ) # for 3 reward regimes (>>, >, ~>)
+efficacys = np.linspace(0, 1, 1000)
+start_works = np.full( (len(efficacys), 4), np.nan ) # for 4 reward regimes (>>, >, ~>)
 
 
 # utilities :
-reward_pass = 1.0 
-reward_fail = -1.0
+reward_pass = 4.0 
+reward_fail = -4.0
 reward_shirk = 0.05
-effort_work = -1
+effort_work = -0.5
 
 for i_efficacy, efficacy in enumerate(efficacys):
 
@@ -92,12 +94,19 @@ for i_efficacy, efficacy in enumerate(efficacys):
     T = get_transition_prob(efficacy)
     V_opt, policy_opt = find_optimal_policy(states, actions, horizon, discount_factor, 
                             reward_func, reward_func_last, T)
-    #print(policy_opt[0,:])
     
     # find timepoint where it becomes optimal to start working (when task not completed)
     start_work = np.where( policy_opt[0, 1:] != policy_opt[0, :-1] )[0]
     
     if len(start_work) > 0 :
-        start_works[i_efficacy, 2] = start_work[0] + 1  
+        start_works[i_efficacy, 3] = start_work[0] + 1  
+        #print( policy_opt[0, :])
 
-
+plt.figure(figsize=(8,6))
+legend = ['0.5:0.05', '1:0.05', '2:0.05', '4:0.05']
+for i_reward_regime, regime in enumerate(legend):
+     plt.plot(efficacys, start_works[:, i_reward_regime], label = regime)
+plt.xlabel('efficacy')
+plt.ylabel('time to start work')
+plt.legend()
+plt.title('effort = %1.1f'%effort_work)
