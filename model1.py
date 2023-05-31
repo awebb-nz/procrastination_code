@@ -78,7 +78,7 @@ def get_transition_prob(efficacy):
             
 #%%
     
-efficacys = np.linspace(0, 1, 1000)
+efficacys = np.linspace(0, 1, 50)
 start_works = np.full( (len(efficacys), 4), np.nan ) # for 4 reward regimes (>>, >, ~>)
 
 
