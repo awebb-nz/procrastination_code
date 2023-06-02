@@ -51,14 +51,14 @@ actions = np.array([['work', 'shirk'],
                     ['completed']], dtype=object) 
 
 horizon = 10 # deadline
-discount_factor = 0.9 # hyperbolic discounting factor
-efficacy = 0.8 # self-efficacy (probability of progress on working)
+discount_factor = 1.0 # hyperbolic discounting factor
+efficacy = 0.7 # self-efficacy (probability of progress on working)
 
 # utilities :
-reward_pass = 4.0 
-reward_fail = -4.0
+reward_pass = 2.0 
+reward_fail = -2.0
 reward_shirk = 0.05
-effort_work = -1.0
+effort_work = -0.0   
 reward_completed = reward_shirk
 
 # reward functions
@@ -93,8 +93,8 @@ V_opt, policy_opt, Q_values = find_optimal_policy(states, actions, horizon, disc
 # plots of policies and values
 for i_state, state in enumerate(states):
     
-    plt.figure()
-    plt.plot(V_opt[i_state], label = 'V*')
+    #plt.figure()
+    plt.plot(V_opt[i_state], label = 'V*%d'%i_state)
     #plt.plot(policy_opt[i_state], label = 'policy*')
     
     for i_action, action in enumerate(actions[i_state]):
@@ -111,8 +111,8 @@ start_works = np.full( (len(efficacys), 4), np.nan ) # for 4 reward regimes (>>,
 
 
 # utilities :
-reward_pass = 0.5 
-reward_fail = -0.5
+reward_pass = 4.0 
+reward_fail = -4.0
 reward_shirk = 0.05
 effort_work = -0.5
 reward_completed = reward_shirk
@@ -122,14 +122,14 @@ for i_efficacy, efficacy in enumerate(efficacys):
     reward_func, reward_func_last = get_reward_functions(reward_pass, reward_fail, reward_shirk, 
                                                          reward_completed, effort_work)
     T = get_transition_prob(efficacy)
-    V_opt, policy_opt = find_optimal_policy(states, actions, horizon, discount_factor, 
-                            reward_func, reward_func_last, T)
+    V_opt, policy_opt, Q_values = find_optimal_policy(states, actions, horizon, discount_factor, 
+                                  reward_func, reward_func_last, T)
     
     # find timepoints where it is optimal to work (when task not completed, state=0
     start_work = np.where( policy_opt[0, :] == 0 )[0]
     
     if len(start_work) > 0 :
-        start_works[i_efficacy, 0] = start_work[0] # first time to start working 
+        start_works[i_efficacy, 3] = start_work[0] # first time to start working 
         #print( policy_opt[0, :])
 
 plt.figure(figsize=(8,6))
@@ -147,9 +147,9 @@ efforts = np.linspace(-8, 1, 50)
 start_works = np.full( (len(efforts), 4), np.nan ) # for 4 reward regimes (>>, >, ~>)
 
 # utilities :
-efficacy = 0.9
-reward_pass = 0.5 
-reward_fail = -0.5
+efficacy = 0.6
+reward_pass = 4.0 
+reward_fail = -4.0
 reward_shirk = 0.05
 reward_completed = reward_shirk
 
@@ -158,14 +158,14 @@ for i_effort, effort_work in enumerate(efforts):
     reward_func, reward_func_last = get_reward_functions(reward_pass, reward_fail, reward_shirk,
                                                          reward_completed, effort_work)
     T = get_transition_prob(efficacy)
-    V_opt, policy_opt = find_optimal_policy(states, actions, horizon, discount_factor, 
-                            reward_func, reward_func_last, T)
+    V_opt, policy_opt, Q_values = find_optimal_policy(states, actions, horizon, discount_factor, 
+                                  reward_func, reward_func_last, T)
     
     # find timepoints where it is optimal to work (when task not completed, state=0)
     start_work = np.where( policy_opt[0, :] == 0 )[0]
     
     if len(start_work) > 0 :
-        start_works[i_effort, 0] = start_work[0] # first time to start working
+        start_works[i_effort, 3] = start_work[0] # first time to start working
         #print( policy_opt[0, :])
 
 plt.figure(figsize=(8,6))
