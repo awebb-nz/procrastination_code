@@ -18,7 +18,7 @@ def find_optimal_policy(states, actions, horizon, discount_factor,
         
         # V_opt for last time-step 
         V_opt[i_state, -1] = reward_func_last[i_state]
-        # arrays to store Q-values for all actions in each state
+        # arrays to store Q-values for each action in each state
         Q_values[i_state] = np.full( (len(actions[i_state]), horizon), np.nan)
     
     # backward induction to derive optimal policy  
@@ -52,19 +52,20 @@ actions = np.array([['work', 'shirk'],
 
 horizon = 10 # deadline
 discount_factor = 1.0 # hyperbolic discounting factor
-efficacy = 0.7 # self-efficacy (probability of progress on working)
+efficacy = 0.9 # self-efficacy (probability of progress on working)
 
 # utilities :
 reward_pass = 2.0 
 reward_fail = -2.0
-reward_shirk = 0.05
-effort_work = -0.0   
+reward_shirk = 0.0
+effort_work = -0.0 
+effort_shirk = -0 
 reward_completed = reward_shirk
 
 # reward functions
 def get_reward_functions(reward_pass, reward_fail, reward_shirk, reward_completed, effort_work):
     
-    reward_func = np.array([[effort_work, reward_shirk], 
+    reward_func = np.array([[effort_work, reward_shirk + effort_shirk], 
                             [reward_completed]], dtype=object)
     reward_func_last = np.array([reward_fail, reward_pass])
     
@@ -91,17 +92,17 @@ V_opt, policy_opt, Q_values = find_optimal_policy(states, actions, horizon, disc
                               reward_func, reward_func_last, T)
 
 # plots of policies and values
+plt.figure( figsize = (8, 6) )
 for i_state, state in enumerate(states):
     
-    #plt.figure()
-    plt.plot(V_opt[i_state], label = 'V*%d'%i_state)
+    plt.plot(V_opt[i_state], label = 'V*%d'%i_state, marker = i_state+4, linestyle = '--')
     #plt.plot(policy_opt[i_state], label = 'policy*')
     
     for i_action, action in enumerate(actions[i_state]):
         
-        plt.plot(Q_values[i_state][i_action, :], label = 'Q'+action)
+        plt.plot(Q_values[i_state][i_action, :], label = 'Q'+action, marker = i_state+4, linestyle = '--')
     
-    plt.title('state = %d'%state)    
+    #plt.title('state = %d'%state)    
     plt.legend()
 
 #%%
@@ -147,9 +148,9 @@ efforts = np.linspace(-8, 1, 50)
 start_works = np.full( (len(efforts), 4), np.nan ) # for 4 reward regimes (>>, >, ~>)
 
 # utilities :
-efficacy = 0.6
-reward_pass = 4.0 
-reward_fail = -4.0
+efficacy = 0.9
+reward_pass = 2.0 
+reward_fail = -2.0
 reward_shirk = 0.05
 reward_completed = reward_shirk
 
