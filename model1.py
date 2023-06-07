@@ -172,8 +172,8 @@ horizon = 10 # deadline
 discount_factor = 0.9 # hyperbolic discounting factor
 # utilities :
 efficacy = 0.8
-reward_pass = 0.5 
-reward_fail = -0.5
+reward_pass = 4.0 
+reward_fail = -4.0
 reward_shirk = 0.5
 reward_completed = reward_shirk
 
@@ -191,15 +191,16 @@ for i_effort, effort_work in enumerate(efforts):
         start_work = np.where( policy_opt[i_state, :] == 0 )[0]
         
         if len(start_work) > 0 :
-            start_works[i_effort, i_state, 0] = start_work[0] # first time to start working
+            start_works[i_effort, i_state, 3] = start_work[0] # first time to start working
             #print( policy_opt[0, :])
             
 for i_state in range(N_intermediate_states+1):
     plt.figure(figsize=(8,6))
     legend = ['0.5:0.5', '1:0.5', '2:0.5', '4:0.5']
     for i_reward_regime, regime in enumerate(legend):
-         plt.plot(efforts, start_works[:, i_reward_regime], label = regime)
+         plt.plot(efforts, start_works[:, i_state, i_reward_regime], label = regime)
     plt.xlabel('effort to work')
     plt.ylabel('time to start work')
     plt.legend()
     plt.title('efficacy = %1.1f state = %d' %(efficacy, i_state) )
+    plt.show()
