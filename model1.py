@@ -172,8 +172,8 @@ horizon = 10 # deadline
 discount_factor = 0.9 # hyperbolic discounting factor
 # utilities :
 efficacy = 0.8
-reward_pass = 4.0 
-reward_fail = -4.0
+reward_pass = 0.5 
+reward_fail = -0.5
 reward_shirk = 0.5
 reward_completed = reward_shirk
 
@@ -191,7 +191,7 @@ for i_effort, effort_work in enumerate(efforts):
         start_work = np.where( policy_opt[i_state, :] == 0 )[0]
         
         if len(start_work) > 0 :
-            start_works[i_effort, i_state, 3] = start_work[0] # first time to start working
+            start_works[i_effort, i_state, 0] = start_work[0] # first time to start working
             #print( policy_opt[0, :])
             
 for i_state in range(N_intermediate_states+1):
