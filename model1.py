@@ -5,10 +5,17 @@ mpl.rcParams['lines.linewidth'] = 2
 import matplotlib.pyplot as plt
 
 #%%
-# find optimal policy using dynamic programming
-
 def find_optimal_policy(states, actions, horizon, discount_factor, 
                         reward_func, reward_func_last, T):
+    '''
+    function to find optimal policy for an MDP with finite horizon, discrete states and actions
+    
+    inputs: states, actions available in each state, rewards from actions and final rewards, 
+    transition probabilities for each action in a state, discount factor, length of horizon
+    
+    outputs: optimal values, optimal policy and action q-values for each timestep and state 
+        
+    '''
 
     V_opt = np.full( (len(states), horizon+1), np.nan)
     policy_opt = np.full( (len(states), horizon), np.nan)
@@ -42,19 +49,23 @@ def find_optimal_policy(states, actions, horizon, discount_factor,
     return V_opt, policy_opt, Q_values
 
 #%%
-# initial parameters
+# initialising mdp for assignment submission: There is an initial state (when assignment is not started),
+# potential intermediate states, and final state of completion. At each non-completed state, there is a choice
+# between actions to WORK which has an immediate effort cost and SHIRK which has an immediate reward. 
+# The final state is absorbing and also has a reward (equivalent to rewards from shirk). The outcome from evaluation 
+# only comes at the deadline (which can be negative to positive based on state at final timepoint).  
 
 # states of markov chain
 N_intermediate_states = 1
 states = np.arange(2 + N_intermediate_states) # intermediate + initial and finished states (2)
 
-# construct action matrix
+# actions available in each state 
 actions = np.full(len(states), np.nan, dtype = object)
 actions[:-1] = [ ['work', 'shirk'] for i in range( len(states)-1 )] # actions for all states but final
 actions[-1] =  ['completed'] # actions for final state
 
 horizon = 10 # deadline
-discount_factor = 0.9 # hyperbolic discounting factor
+discount_factor = 0.9 # discounting factor
 efficacy = 0.9 # self-efficacy (probability of progress on working)
 
 # utilities :
@@ -98,7 +109,7 @@ def get_transition_prob(states, efficacy):
     return T
 
 #%% 
-# example run
+# example policy
 
 reward_func, reward_func_last = get_reward_functions(states, reward_pass, reward_fail, reward_shirk, 
                                                      reward_completed, effort_work)
@@ -123,9 +134,11 @@ for i_state, state in enumerate(states):
     plt.legend()
 
 #%%
-    
+# solving for policies for a range of efficacies
+
 efficacys = np.linspace(0, 1, 50)
-start_works = np.full( (len(efficacys), N_intermediate_states+1, 4), np.nan ) # for 4 reward regimes (>>, >, ~>)
+# optimal starting point for 4 reward regimes (change manually)
+start_works = np.full( (len(efficacys), N_intermediate_states+1, 4), np.nan )
 
 horizon = 10 # deadline
 discount_factor = 0.9 # hyperbolic discounting factor
@@ -163,9 +176,11 @@ for i_state in range(N_intermediate_states+1):
     plt.title('effort = %1.1f, state = %d'%(effort_work, i_state))
 
 #%%
+# solving for policies for a range of efforts
 
 efforts = np.linspace(-8, 1, 50)
-start_works = np.full( (len(efforts), N_intermediate_states+1, 4), np.nan ) # for 4 reward regimes (>>, >, ~>)
+# optimal starting point for 4 reward regimes (change manually)
+start_works = np.full( (len(efforts), N_intermediate_states+1, 4), np.nan ) 
 
 
 horizon = 10 # deadline
