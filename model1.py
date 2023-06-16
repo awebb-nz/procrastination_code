@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 def find_optimal_policy(states, actions, horizon, discount_factor, 
                         reward_func, reward_func_last, T):
     '''
-    function to find optimal policy for an MDP with finite horizon, discrete states and actions
+    function to find optimal policy for an MDP with finite horizon, discrete states
+    and actions using dynamic programming
     
     inputs: states, actions available in each state, rewards from actions and final rewards, 
     transition probabilities for each action in a state, discount factor, length of horizon
@@ -47,6 +48,37 @@ def find_optimal_policy(states, actions, horizon, discount_factor,
             Q_values[i_state][:, i_timestep] = Q
             
     return V_opt, policy_opt, Q_values
+
+
+def forward_runs( policy, V, initial_state, horizon, states, T):
+    
+    '''
+    function to simulate actions taken and states reached forward time given a policy 
+    and initial state in an mdp
+    
+    inputs: policy, corresponding values, initial state, horizon, states available, T
+    
+    outputs: actions taken according to policy, corresponding values and states reached based on T
+    '''
+    
+    # arrays to store states, actions taken and values of actions in time
+    states_forward = np.full( horizon+1, 100 )
+    actions_forward = np.full( horizon, 100 )
+    values_forward = np.full( horizon, np.nan )
+    
+    states_forward[0] = initial_state # initial state
+    
+    for i_timestep in range(horizon):
+        
+        # action at a state and timestep as given by policy
+        actions_forward[i_timestep] = policy[ states_forward[i_timestep], i_timestep ]
+        # corresponding value
+        values_forward[i_timestep] = V[ states_forward[i_timestep], i_timestep ]
+        # next state given by transition probabilities
+        states_forward[i_timestep+1] = np.random.choice ( len(states), 
+                                       p = T[ states_forward[i_timestep] ][ actions_forward[i_timestep] ] )
+    
+    return states_forward, actions_forward, values_forward
 
 #%%
 # initialising mdp for assignment submission: There is an initial state (when assignment is not started),
@@ -143,7 +175,7 @@ start_works = np.full( (len(efficacys), N_intermediate_states+1, 4), np.nan )
 horizon = 10 # deadline
 discount_factor = 0.9 # hyperbolic discounting factor
 # utilities :
-reward_pass = 4.0 
+reward_pass = 4.0
 reward_fail = -4.0
 reward_shirk = 0.2
 effort_work = -0.4
@@ -219,3 +251,19 @@ for i_state in range(N_intermediate_states+1):
     plt.legend()
     plt.title('efficacy = %1.1f state = %d' %(efficacy, i_state) )
     plt.show()
+    
+    
+#%%
+# forward runs
+    
+reward_func, reward_func_last = get_reward_functions(states, reward_pass, reward_fail, reward_shirk, 
+                                                     reward_completed, effort_work)
+T = get_transition_prob(states, efficacy)
+V_opt, policy_opt, Q_values = find_optimal_policy(states, actions, horizon, discount_factor, 
+                              reward_func, reward_func_last, T)
+    
+for i in range(100):
+    
+     s, a, v = forward_runs(policy_opt, V_opt, initial_state, horizon, states, T)
+    
+    
