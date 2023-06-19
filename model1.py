@@ -3,6 +3,7 @@ import matplotlib as mpl
 mpl.rcParams['font.size'] = 14
 mpl.rcParams['lines.linewidth'] = 2
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 #%%
 def find_optimal_policy(states, actions, horizon, discount_factor, 
@@ -101,8 +102,8 @@ discount_factor = 0.9 # discounting factor
 efficacy = 0.9 # self-efficacy (probability of progress on working)
 
 # utilities :
-reward_pass = 2.0 
-reward_fail = -2.0
+reward_pass = 4.0 
+reward_fail = -4.0
 reward_shirk = 0.5
 effort_work = -0.4
 effort_shirk = -0 
@@ -256,14 +257,37 @@ for i_state in range(N_intermediate_states+1):
 #%%
 # forward runs
     
-reward_func, reward_func_last = get_reward_functions(states, reward_pass, reward_fail, reward_shirk, 
-                                                     reward_completed, effort_work)
-T = get_transition_prob(states, efficacy)
-V_opt, policy_opt, Q_values = find_optimal_policy(states, actions, horizon, discount_factor, 
-                              reward_func, reward_func_last, T)
+efficacys = np.linspace(0, 1, 10) # vary efficacy 
+policy_always_work = np.full(np.shape(policy_opt), 0) # always work policy
+V_always_work = np.full(np.shape(V_opt), 0.0)
+
+# arrays to store no. of runs where task was finished 
+count_opt = np.full( (len(efficacys), 1), 0) 
+count_always_work = np.full( (len(efficacys), 1), 0)
+N_runs = 2000 # no. of runs for each parameter set
+
+for i_efficacy, efficacy in enumerate(efficacys):
     
-for i in range(100):
+    # get optimal policy for current parameter set
+    reward_func, reward_func_last = get_reward_functions(states, reward_pass, reward_fail, reward_shirk, 
+                                                         reward_completed, effort_work)
+    T = get_transition_prob(states, efficacy)
+    V_opt, policy_opt, Q_values = find_optimal_policy(states, actions, horizon, discount_factor, 
+                                  reward_func, reward_func_last, T)
     
-     s, a, v = forward_runs(policy_opt, V_opt, initial_state, horizon, states, T)
-    
-    
+    # run forward (N_runs no. of times), count number of times task is finished for each policy
+    initial_state = 0
+    for i in range(N_runs):
+         
+        s, a, v = forward_runs(policy_opt, V_opt, initial_state, horizon, states, T)
+        if s[-1] == len(states)-1: count_opt[i_efficacy,0] +=1
+        
+        s, a, v = forward_runs(policy_always_work, V_opt, initial_state, horizon, states, T)
+        if s[-1] == len(states)-1: count_always_work[i_efficacy,0] +=1
+
+plt.figure(figsize=(8,6))
+plt.bar( efficacys, count_always_work[:, 0]/N_runs, alpha = 0.5, width=0.1, color='tab:blue', label = 'always work')
+plt.bar( efficacys, count_opt[:, 0]/N_runs, alpha = 1, width=0.1, color='tab:blue', label = 'optimal policy')
+plt.legend()
+plt.xlabel('efficacy')
+plt.ylabel('Proportion of finished runs')
