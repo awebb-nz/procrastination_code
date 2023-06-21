@@ -84,10 +84,10 @@ def forward_runs( policy, V, initial_state, horizon, states, T):
 # construct reward functions
 def get_reward_functions(states, reward_pass, reward_fail, reward_shirk, reward_completed, effort_work):
     
+    rs = [ [effort_work, reward_shirk + effort_shirk] for i in range( len(states)-1 )]
+    rs.append([reward_completed])
     # reward from actions within horizon
-    reward_func = np.full(len(states), np.nan, dtype = object)
-    reward_func[:-1] = [ [effort_work, reward_shirk + effort_shirk] for i in range( len(states)-1 )]
-    reward_func[-1] = [reward_completed]
+    reward_func = np.array(rs, dtype = object)
     
     # reward from final evaluation
     reward_func_last =  np.linspace(reward_fail, reward_pass, len(states)) 
@@ -101,22 +101,22 @@ def get_transition_prob(states, efficacy):
     if len(states) == 3:
         T = np.array([
             [
-                np.array([1-efficacy, efficacy, 0]), 
-                np.array([1, 0, 0]) 
+                [1-efficacy, efficacy, 0], 
+                [1, 0, 0] 
             ], # transitions for work, shirk
             [
-                np.array([0, 1-efficacy, efficacy]), 
-                np.array([0, 1, 0]) 
+                [0, 1-efficacy, efficacy], 
+                [0, 1, 0] 
             ], # transitions for work, shirk
-            [ np.array([0, 0, 1]) ] # transitions for completed
+            [ [0, 0, 1] ] # transitions for completed
         ], dtype = object)
     elif len(states) == 2:
         T = np.array([
             [ 
-                np.array([1-efficacy, efficacy]), 
-                np.array([1, 0]) 
+                [1-efficacy, efficacy], 
+                [1, 0] 
             ], # transitions for work, shirk
-            [ np.array([0, 1]) ] # transitions for completed
+            [ [0, 1] ] # transitions for completed
         ], dtype = object)
     
     return T
@@ -174,8 +174,8 @@ for i_state, state in enumerate(states):
         plt.plot(Q_values[i_state][i_action, :], label = 'Q'+action, marker = i_state+4, linestyle = '--')
     
     #plt.title('state = %d'%state)    
-    plt.legend()
-    plt.show(block=False)
+plt.legend()
+plt.show(block=False)
 
 #%%
 # solving for policies for a range of efficacies
