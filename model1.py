@@ -81,6 +81,46 @@ def forward_runs( policy, V, initial_state, horizon, states, T):
     
     return states_forward, actions_forward, values_forward
 
+# construct reward functions
+def get_reward_functions(states, reward_pass, reward_fail, reward_shirk, reward_completed, effort_work):
+    
+    # reward from actions within horizon
+    reward_func = np.full(len(states), np.nan, dtype = object)
+    reward_func[:-1] = [ [effort_work, reward_shirk + effort_shirk] for i in range( len(states)-1 )]
+    reward_func[-1] = [reward_completed]
+    
+    # reward from final evaluation
+    reward_func_last =  np.linspace(reward_fail, reward_pass, len(states)) 
+    
+    return reward_func, reward_func_last
+
+# construct transition matrix
+def get_transition_prob(states, efficacy):
+    T = None
+    # for 3 states:
+    if len(states) == 3:
+        T = np.array([
+            [
+                np.array([1-efficacy, efficacy, 0]), 
+                np.array([1, 0, 0]) 
+            ], # transitions for work, shirk
+            [
+                np.array([0, 1-efficacy, efficacy]), 
+                np.array([0, 1, 0]) 
+            ], # transitions for work, shirk
+            [ np.array([0, 0, 1]) ] # transitions for completed
+        ], dtype = object)
+    elif len(states) == 2:
+        T = np.array([
+            [ 
+                np.array([1-efficacy, efficacy]), 
+                np.array([1, 0]) 
+            ], # transitions for work, shirk
+            [ np.array([0, 1]) ] # transitions for completed
+        ], dtype = object)
+    
+    return T
+
 #%%
 # initialising mdp for assignment submission: There is an initial state (when assignment is not started),
 # potential intermediate states, and final state of completion. At each non-completed state, there is a choice
@@ -109,37 +149,7 @@ effort_work = -0.4
 effort_shirk = -0 
 reward_completed = reward_shirk
 
-# construct reward functions
-def get_reward_functions(states, reward_pass, reward_fail, reward_shirk, reward_completed, effort_work):
-    
-    # reward from actions within horizon
-    reward_func = np.full(len(states), np.nan, dtype = object)
-    reward_func[:-1] = [ [effort_work, reward_shirk + effort_shirk] for i in range( len(states)-1 )]
-    reward_func[-1] = [reward_completed]
-    
-    # reward from final evaluation
-    reward_func_last =  np.linspace(reward_fail, reward_pass, len(states)) 
-    
-    return reward_func, reward_func_last
 
-# construct transition matrix
-def get_transition_prob(states, efficacy):
-    
-    T = np.full(len(states), np.nan, dtype = object)
-    
-    # for 3 states:
-    T[0] = [ np.array([1-efficacy, efficacy, 0]), 
-             np.array([1, 0, 0]) ] # transitions for work, shirk
-    T[1] = [ np.array([0, 1-efficacy, efficacy]), 
-             np.array([0, 1, 0]) ] # transitions for work, shirk
-    T[2] = [ np.array([0, 0, 1]) ] # transitions for completed
-    
-#    # for 2 states:
-#    T[0] = [ np.array([1-efficacy, efficacy]), 
-#             np.array([1, 0]) ] # transitions for work, shirk
-#    T[1] = [ np.array([0, 1]) ] # transitions for completed
-    
-    return T
 
 #%% 
 # example policy
@@ -165,6 +175,7 @@ for i_state, state in enumerate(states):
     
     #plt.title('state = %d'%state)    
     plt.legend()
+    plt.show(block=False)
 
 #%%
 # solving for policies for a range of efficacies
@@ -207,6 +218,7 @@ for i_state in range(N_intermediate_states+1):
     plt.ylabel('time to start work')
     plt.legend()
     plt.title('effort = %1.1f, state = %d'%(effort_work, i_state))
+    plt.show(block=False)
 
 #%%
 # solving for policies for a range of efforts
@@ -251,7 +263,7 @@ for i_state in range(N_intermediate_states+1):
     plt.ylabel('time to start work')
     plt.legend()
     plt.title('efficacy = %1.1f state = %d' %(efficacy, i_state) )
-    plt.show()
+    plt.show(block=False)
     
     
 #%%
@@ -291,3 +303,4 @@ plt.bar( efficacys, count_opt[:, 0]/N_runs, alpha = 1, width=0.1, color='tab:blu
 plt.legend()
 plt.xlabel('efficacy')
 plt.ylabel('Proportion of finished runs')
+plt.show()
